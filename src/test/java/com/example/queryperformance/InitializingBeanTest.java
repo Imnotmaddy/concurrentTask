@@ -6,11 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.sql.Connection;
@@ -26,12 +22,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class InitializingBeanTest {
     @Autowired
     PropertyScanner propertyScanner;
-    @Autowired
-    private ConfigurableEnvironment env;
 
     @Test
     public void onStartupTablesAreCreatedForEachDataSourceProp() throws SQLException {
         final List<DataSourceConnectionProvider> dataSourcesFromProps = propertyScanner.getDataSourcesFromProps();
+
         assertThat(dataSourcesFromProps.size()).isEqualTo(3);
 
         for (DataSourceConnectionProvider provider : dataSourcesFromProps) {
@@ -40,4 +35,5 @@ public class InitializingBeanTest {
             assertThat(statement.executeQuery()).isNotNull();
         }
     }
+
 }
