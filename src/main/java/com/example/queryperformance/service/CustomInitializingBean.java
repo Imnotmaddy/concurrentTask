@@ -16,18 +16,18 @@ public class CustomInitializingBean implements InitializingBean {
 
     private final PropertyScanner propertyScanner;
 
-    private final static String CREATE_TABLE = "CREATE TABLE user  (id INTEGER not NULL, " +
+    private final static String CREATE_TABLE = "CREATE TABLE if not exists user  (id INTEGER not NULL, " +
             " name VARCHAR(255), " +
             " PRIMARY KEY ( id ))";
-    private final static String SQL_INSERT_ATTACHMENT = "INSERT INTO user (`id`,`name`) VALUES (?,?)";
+    private final static String SQL_INSERT_ATTACHMENT = "REPLACE INTO user (id,name) VALUES (?,?) ";
 
     @Override
     public void afterPropertiesSet() throws Exception {
         final List<DataSourceConnectionProvider> sources = propertyScanner.getDataSourcesFromProps();
         for (DataSourceConnectionProvider source : sources) {
             final Connection connection = source.getConnection();
-            try (final Statement statement1 = connection.createStatement()) {
-                statement1.execute(CREATE_TABLE);
+            try (final Statement statement = connection.createStatement()) {
+                statement.execute(CREATE_TABLE);
             }
             try (PreparedStatement statement = connection.prepareStatement(SQL_INSERT_ATTACHMENT)) {
                 statement.setInt(1, 1);

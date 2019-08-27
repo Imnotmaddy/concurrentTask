@@ -3,7 +3,6 @@ package com.example.queryperformance.service;
 import com.example.queryperformance.domain.DataSourceConnectionProvider;
 import com.example.queryperformance.dto.ResultDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -24,10 +23,11 @@ public class AppServiceImpl implements AppService {
     private static final long SLEEP_TIME = 5000;
     private static final String SQL_FIND_BY_NAME = "SELECT * FROM USER WHERE `name` = ? ";
 
-    public List<ResultDto> benchmark() throws ExecutionException, InterruptedException {
+    public List<ResultDto> benchmark() throws ExecutionException, InterruptedException, AppException {
         List<Callable<ResultDto>> tasks = new ArrayList<>();
         List<ResultDto> benchmarkResult = new ArrayList<>();
         List<DataSourceConnectionProvider> dataSourceConnectionProvider = propertyScanner.getDataSourcesFromProps();
+        if (dataSourceConnectionProvider.size() ==0) throw new AppException("No props found");
         ExecutorService executorService = Executors.newFixedThreadPool(dataSourceConnectionProvider.size());
 
         for (DataSourceConnectionProvider provider : dataSourceConnectionProvider) {
