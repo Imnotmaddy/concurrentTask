@@ -1,6 +1,7 @@
 package com.example.queryperformance;
 
 import com.example.queryperformance.domain.DataSourceConnectionProvider;
+import com.example.queryperformance.service.AppException;
 import com.example.queryperformance.service.PropertyScanner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +25,7 @@ public class InitializingBeanTest {
     PropertyScanner propertyScanner;
 
     @Test
-    public void onStartupTablesAreCreatedForEachDataSourceProp() throws SQLException {
+    public void onStartupTablesAreCreatedForEachDataSourceProp() throws SQLException, AppException {
         final List<DataSourceConnectionProvider> dataSourcesFromProps = propertyScanner.getDataSourcesFromProps();
 
         assertThat(dataSourcesFromProps.size()).isEqualTo(3);
@@ -35,5 +36,4 @@ public class InitializingBeanTest {
             assertThat(statement.executeQuery()).isNotNull();
         }
     }
-
 }

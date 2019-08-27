@@ -27,7 +27,6 @@ public class AppServiceImpl implements AppService {
     public List<ResultDto> benchmark() throws ExecutionException, InterruptedException, AppException {
         List<ResultDto> benchmarkResult = new ArrayList<>();
         List<DataSourceConnectionProvider> dataSourceConnectionProvider = propertyScanner.getDataSourcesFromProps();
-        if (dataSourceConnectionProvider.size() == 0) throw new AppException("No props found");
         List<Callable<ResultDto>> tasks = createTasks(dataSourceConnectionProvider);
         ExecutorService executorService = Executors.newFixedThreadPool(dataSourceConnectionProvider.size());
 
