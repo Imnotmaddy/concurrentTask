@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -24,13 +25,23 @@ public class AppServiceImpl implements AppService {
     private static final String SQL_FIND_BY_NAME = "SELECT * FROM USER WHERE `name` = ? ";
 
     public List<ResultDto> benchmark() throws ExecutionException, InterruptedException, AppException {
-        List<Callable<ResultDto>> tasks = new ArrayList<>();
         List<ResultDto> benchmarkResult = new ArrayList<>();
         List<DataSourceConnectionProvider> dataSourceConnectionProvider = propertyScanner.getDataSourcesFromProps();
-        if (dataSourceConnectionProvider.size() ==0) throw new AppException("No props found");
+        if (dataSourceConnectionProvider.size() == 0) throw new AppException("No props found");
+        List<Callable<ResultDto>> tasks = createTasks(dataSourceConnectionProvider);
         ExecutorService executorService = Executors.newFixedThreadPool(dataSourceConnectionProvider.size());
 
-        for (DataSourceConnectionProvider provider : dataSourceConnectionProvider) {
+        List<Future<ResultDto>> futures = new ArrayList<>(executorService.invokeAll(tasks));
+        for (Future<ResultDto> future : futures) {
+            benchmarkResult.add(future.get());
+        }
+        executorService.shutdown();
+        return benchmarkResult;
+    }
+
+    private List<Callable<ResultDto>> createTasks(List<DataSourceConnectionProvider> providers) {
+        List<Callable<ResultDto>> tasks = new ArrayList<>();
+        for (DataSourceConnectionProvider provider : providers) {
             Callable<ResultDto> task = () -> {
                 ResultDto result = new ResultDto(provider.getUrl(), null, Thread.currentThread().getName());
                 try (final Connection connection = provider.getConnection();
@@ -47,11 +58,6 @@ public class AppServiceImpl implements AppService {
             };
             tasks.add(task);
         }
-        List<Future<ResultDto>> futures = new ArrayList<>(executorService.invokeAll(tasks));
-        for (Future<ResultDto> future : futures) {
-            benchmarkResult.add(future.get());
-        }
-        executorService.shutdown();
-        return benchmarkResult;
+        return tasks;
     }
 }
