@@ -2,8 +2,10 @@ package com.example.queryperformance.controller;
 
 import com.example.queryperformance.dto.ResultDto;
 import com.example.queryperformance.service.AppService;
-import lombok.RequiredArgsConstructor;
+import lombok.Synchronized;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +19,8 @@ public class QueryController {
     private AppService appService;
 
     @PostMapping("/benchmark")
-    public List<ResultDto> method() throws ExecutionException, InterruptedException {
-        return appService.method();
+    @Synchronized
+    public List<ResultDto> benchmark() throws ExecutionException, InterruptedException {
+        return appService.benchmark();
     }
 }

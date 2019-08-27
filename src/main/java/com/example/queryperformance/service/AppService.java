@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public interface AppService {
-    List<ResultDto> benchmark();
-    List<ResultDto> method() throws InterruptedException, ExecutionException;
+    List<ResultDto> benchmark() throws InterruptedException, ExecutionException;
 
 }
