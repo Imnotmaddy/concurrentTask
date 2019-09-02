@@ -2,7 +2,7 @@ package com.example.queryperformance.service;
 
 import com.example.queryperformance.dto.ResultDto;
 import com.example.queryperformance.model.DataSourceConnectionProvider;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Synchronized;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 
 import static java.lang.System.nanoTime;
@@ -25,12 +26,14 @@ public class AppServiceImpl implements AppService {
         this.propertyScanner = propertyScanner;
     }
 
+
     @Override
-    public List<ResultDto> benchmark(String query) throws ExecutionException, InterruptedException, AppException {
+    @Synchronized
+    public List<ResultDto> benchmark(String query, Set<String> dataSources) throws ExecutionException, InterruptedException, AppException {
         List<ResultDto> benchmarkResult = new ArrayList<>();
         List<DataSourceConnectionProvider> dataSourceConnectionProvider = propertyScanner.getDataSourcesFromProps();
-        List<Callable<ResultDto>> tasks = createTasks(dataSourceConnectionProvider, query);
-        ExecutorService executorService = Executors.newFixedThreadPool(dataSourceConnectionProvider.size());
+        List<Callable<ResultDto>> tasks = createTasks(dataSourceConnectionProvider, query, dataSources);
+        ExecutorService executorService = Executors.newFixedThreadPool(dataSources.size());
 
         List<Future<ResultDto>> futures = new ArrayList<>(executorService.invokeAll(tasks));
         for (Future<ResultDto> future : futures) {
@@ -40,11 +43,11 @@ public class AppServiceImpl implements AppService {
         return benchmarkResult;
     }
 
-    private List<Callable<ResultDto>> createTasks(List<DataSourceConnectionProvider> providers, String query) {
+    private List<Callable<ResultDto>> createTasks(List<DataSourceConnectionProvider> providers, String query, Set<String> dataSources) {
         List<Callable<ResultDto>> tasks = new ArrayList<>();
-        for (DataSourceConnectionProvider provider : providers) {
+        providers.stream().filter(obj -> dataSources.contains(obj.getName())).forEach(provider -> {
             Callable<ResultDto> task = () -> {
-                ResultDto result = new ResultDto(provider.getUrl(), null, Thread.currentThread().getName());
+                ResultDto result = new ResultDto(provider.getName(), null, Thread.currentThread().getName());
                 try (final Connection connection = provider.getConnection();
                      PreparedStatement statement = connection.prepareStatement(query)) {
                     final long startTime = nanoTime();
@@ -57,7 +60,11 @@ public class AppServiceImpl implements AppService {
                 return result;
             };
             tasks.add(task);
-        }
+        });
         return tasks;
+    }
+
+    public Set<String> getDataSources() {
+        return propertyScanner.getDataSourceNames();
     }
 }

@@ -9,13 +9,13 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class CustomInitializingBean implements InitializingBean {
 
     private final PropertyScanner propertyScanner;
 
-    private final static String RUN_SCRIPT = "RUNSCRIPT FROM ";
     private final static String SOURCE_FILE_PATH = "schema.sql";
 
     public CustomInitializingBean(PropertyScanner propertyScanner) {
@@ -28,7 +28,7 @@ public class CustomInitializingBean implements InitializingBean {
         for (DataSourceConnectionProvider source : sources) {
             final Connection connection = source.getConnection();
             try (final Statement statement = connection.createStatement()) {
-                statement.execute(RUN_SCRIPT + "'" + getSourceDataFilePath() + "'");
+                statement.execute("RUNSCRIPT FROM '" + getSourceDataFilePath() + "'");
             }
             connection.close();
         }

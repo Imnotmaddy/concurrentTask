@@ -27,9 +27,10 @@ public class EndpointTest {
 
     @Test
     public void testBenchmark() throws Exception {
-        mockMvc.perform(post(BENCHMARK))
+        mockMvc.perform(post(BENCHMARK).requestAttr("query","select * from users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(3)));
     }
+
 }
