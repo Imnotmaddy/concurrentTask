@@ -1,6 +1,7 @@
 package com.example.queryperformance.service;
 
 import com.example.queryperformance.dto.ResultDto;
+import com.example.queryperformance.exception.AppException;
 import com.example.queryperformance.model.DataSourceConnectionProvider;
 import lombok.Synchronized;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,10 @@ public class AppServiceImpl implements AppService {
             benchmarkResult.add(future.get());
         }
         executorService.shutdown();
+
+        if (benchmarkResult.isEmpty())
+            throw new AppException("Bad dataSources were specified");
+
         return benchmarkResult;
     }
 

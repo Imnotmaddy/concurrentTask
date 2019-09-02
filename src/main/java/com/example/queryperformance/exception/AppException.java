@@ -1,4 +1,4 @@
-package com.example.queryperformance.service;
+package com.example.queryperformance.exception;
 
 public class AppException extends Exception {
     public AppException(String message) {

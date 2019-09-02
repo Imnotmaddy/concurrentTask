@@ -1,6 +1,7 @@
 package com.example.queryperformance.service;
 
 import com.example.queryperformance.dto.ResultDto;
+import com.example.queryperformance.exception.AppException;
 
 import java.util.List;
 import java.util.Set;
