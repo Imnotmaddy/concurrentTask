@@ -1,4 +1,4 @@
-package com.example.queryperformance.domain;
+package com.example.queryperformance.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

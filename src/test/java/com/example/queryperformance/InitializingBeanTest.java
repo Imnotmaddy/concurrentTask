@@ -1,6 +1,6 @@
 package com.example.queryperformance;
 
-import com.example.queryperformance.domain.DataSourceConnectionProvider;
+import com.example.queryperformance.model.DataSourceConnectionProvider;
 import com.example.queryperformance.service.AppException;
 import com.example.queryperformance.service.PropertyScanner;
 import org.junit.Test;
@@ -24,16 +24,4 @@ public class InitializingBeanTest {
     @Autowired
     PropertyScanner propertyScanner;
 
-    @Test
-    public void onStartupTablesAreCreatedForEachDataSourceProp() throws SQLException, AppException {
-        final List<DataSourceConnectionProvider> dataSourcesFromProps = propertyScanner.getDataSourcesFromProps();
-
-        assertThat(dataSourcesFromProps.size()).isEqualTo(3);
-
-        for (DataSourceConnectionProvider provider : dataSourcesFromProps) {
-            final Connection connection = provider.getConnection();
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM user");
-            assertThat(statement.executeQuery()).isNotNull();
-        }
-    }
 }

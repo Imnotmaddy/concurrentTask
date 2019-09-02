@@ -1,25 +1,26 @@
 package com.example.queryperformance.service;
 
-import com.example.queryperformance.domain.DataSourceConnectionProvider;
-import lombok.RequiredArgsConstructor;
+import com.example.queryperformance.model.DataSourceConnectionProvider;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.net.URL;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class CustomInitializingBean implements InitializingBean {
 
     private final PropertyScanner propertyScanner;
 
-    private final static String CREATE_TABLE = "CREATE TABLE if not exists user  (id INTEGER not NULL, " +
-            " name VARCHAR(255), " +
-            " PRIMARY KEY ( id ))";
-    private final static String SQL_INSERT_ATTACHMENT = "REPLACE INTO user (id,name) VALUES (?,?) ";
+    private final static String RUN_SCRIPT = "RUNSCRIPT FROM ";
+    private final static String SOURCE_FILE_PATH = "schema.sql";
+
+    public CustomInitializingBean(PropertyScanner propertyScanner) {
+        this.propertyScanner = propertyScanner;
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -27,14 +28,15 @@ public class CustomInitializingBean implements InitializingBean {
         for (DataSourceConnectionProvider source : sources) {
             final Connection connection = source.getConnection();
             try (final Statement statement = connection.createStatement()) {
-                statement.execute(CREATE_TABLE);
-            }
-            try (PreparedStatement statement = connection.prepareStatement(SQL_INSERT_ATTACHMENT)) {
-                statement.setInt(1, 1);
-                statement.setString(2, "mike");
-                statement.executeUpdate();
+                statement.execute(RUN_SCRIPT + "'" + getSourceDataFilePath() + "'");
             }
             connection.close();
         }
+    }
+
+    private String getSourceDataFilePath() throws AppException {
+        final URL resource = CustomInitializingBean.class.getClassLoader().getResource(SOURCE_FILE_PATH);
+        if (resource == null) throw new AppException("Couldn't instantiate dataBase");
+        return resource.getPath();
     }
 }

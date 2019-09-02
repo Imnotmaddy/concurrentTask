@@ -1,8 +1,8 @@
 package com.example.queryperformance.service;
 
-import com.example.queryperformance.domain.DataSourceConnectionProvider;
+import com.example.queryperformance.model.DataSourceConnectionProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -15,12 +15,17 @@ public class PropertyScanner {
 
     private final Environment environment;
 
+    @Value("${benchmark.usedDataSources}")
+    private List<String> dataSources;
+
+
+
     public List<DataSourceConnectionProvider> getDataSourcesFromProps() throws AppException {
         List<DataSourceConnectionProvider> providers = new ArrayList<>();
-        for (int i = 0; ; i++) {
-            String username = environment.getProperty("datasource" + i + ".username");
-            String password = environment.getProperty("datasource" + i + ".password");
-            String url = environment.getProperty("datasource" + i + ".url");
+        for (String source : dataSources) {
+            String username = environment.getProperty(source + ".username");
+            String password = environment.getProperty(source + ".password");
+            String url = environment.getProperty(source + ".url");
 
             if (username == null || password == null || url == null) {
                 if (providers.size() == 0)
@@ -29,5 +34,6 @@ public class PropertyScanner {
             }
             providers.add(new DataSourceConnectionProvider(username, password, url));
         }
+        return providers;
     }
 }
